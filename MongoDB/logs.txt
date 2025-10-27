@@ -15,3 +15,15 @@
 ::1 -- [5:46:25 PM] GET /health 200
 ::1 -- [5:48:03 PM] DELETE /users/82a8575208736f3eeb59a54e 200
 ::1 -- [5:48:30 PM] DELETE /users/82a8575208736f3eeb59a54e 200
+::ffff:127.0.0.1 -- [11:28:55 am] GET / 200
+::ffff:127.0.0.1 -- [11:30:20 am] GET / 200
+::ffff:127.0.0.1 -- [11:31:20 am] GET /users 200
+::ffff:127.0.0.1 -- [11:33:15 am] POST /users 200
+::ffff:127.0.0.1 -- [11:33:51 am] POST /users 200
+::ffff:127.0.0.1 -- [11:34:36 am] POST /users 200
+::1 -- [11:49:28 am] GET /users 200
+::ffff:127.0.0.1 -- [11:59:37 am] POST /users 200
+::ffff:127.0.0.1 -- [12:02:56 pm] POST /users 200
+::1 -- [12:10:51 pm] GET /users 200
+::ffff:127.0.0.1 -- [12:11:05 pm] POST /users 200
+::ffff:127.0.0.1 -- [12:24:08 pm] POST /users 200

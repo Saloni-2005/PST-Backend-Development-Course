@@ -1,9 +1,11 @@
 const mongoose = require("mongoose");
 const User = require("../models/user.model");
 
+// mongodb+srv://cyclebay:xJlMX7gwQVqdXhfl@cluster0.2zcpzam.mongodb.net/
+
 const connectToDB = async () => {
     try{
-        await mongoose.connect("mongodb://localhost:27017/sem3DB");
+        await mongoose.connect("mongodb://localhost:27017/MongoDbLearning");
         console.log("Connected to DB");
 
         // Basic CRUD : not part of Project
@@ -29,8 +31,6 @@ const connectToDB = async () => {
     } catch(error){
         console.error("Error Connecting DB...", error);
     }
-    
 }
 
 module.exports = connectToDB;
-

@@ -1,104 +1,94 @@
-// business logic
+// business logic with MongoDB (Mongoose)
 
-const { getUsers, setUsers } = require("../fs");
 const User = require("../models/user.model");
 
+// Get all users (with optional search by name)
+const getAllUsers = async (req, res) => {
+    try {
+        const search = req.query.search || "";
+        const page = parseInt(req.query.page) || 1;   // default page = 1
+        const limit = parseInt(req.query.limit) || 1; // default 10 per page
+        const skip = (page - 1) * limit;
 
-// Get all users
-const getAllUsers = (req, res) => {
-    const search = req.query.search;
+        let query = {};
+        if (search) {
+            query.name = { $regex: search, $options: "i" }; // case-insensitive search
+        }
 
-    let data = getUsers();
-    const users = data.users;
-    let filteredUsers = users;
+        // Get total count for pagination info
+        const totalUsers = await User.countDocuments(query);
 
-    if (search) {
-        console.log(search);
-        filteredUsers = users.filter(user =>
-            user.name.toLowerCase().includes(search.toLowerCase())
-        );
-        console.log(filteredUsers);
+        // Fetch users with pagination and sorting by name alphabetically
+        const users = await User.find(query)
+            .sort({ name: 1 }) // ascending (A → Z).
+            .skip(skip)
+            .limit(limit);
+
+        res.status(200).json({
+            message: "List of all users",
+            page,
+            limit,
+            totalUsers,
+            totalPages: Math.ceil(totalUsers / limit),
+            response: users
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching users", error: err.message });
     }
-
-    res.json({
-        message: "List of all users",
-        response: filteredUsers
-    });
 };
 
 // Create a new user
-const createNewUser = (req, res) => {
-    const body = req.body;
-    console.log(body);
+const createNewUser = async (req, res) => {
+    try {
+        const body = req.body;
+        const newUser = new User(body);
+        await newUser.save();
 
-    const data = getUsers();
-    const users = data.users;
-
-    const newId = Number(users[users.length - 1]?.id || 0) + 1;
-    const newUser = { id: newId, ...body };
-    users.push(newUser);
-    setUsers(data);
-
-    res.json({
-        message: "New user created",
-        response: getUsers().users
-    });
+        res.status(201).json({
+            message: "New user created",
+            response: newUser
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Error creating user", error: err.message });
+    }
 };
 
 // Update user by ID
-const updateUser = (req, res) => {
-    const id = Number(req.params.id);
-    console.log(id);
+const updateUser = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const updatedUser = await User.findByIdAndUpdate(id, req.body, { new: true });
 
-    const updatedUser = req.body;
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
 
-    const data = getUsers();
-    const users = data.users;
-
-    const index = users.findIndex(user => user.id === id);
-
-    if (index === -1) {
-        return res.status(404).send({ message: "User not found" });
+        res.status(200).json({
+            message: "User updated",
+            response: updatedUser
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Error updating user", error: err.message });
     }
-
-    users[index] = { ...users[index], ...updatedUser };
-    setUsers(data);
-
-    res.send({
-        message: "User updated",
-        response: data.users
-    });
 };
 
 // Delete user by ID
 const deleteUser = async (req, res) => {
-    const id = req.params.id;
-    console.log(id);
+    try {
+        const id = req.params.id;
+        const deletedUser = await User.findByIdAndDelete(id);
 
-    // let data = getUsers();
-    // let users = data.users;
+        if (!deletedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
 
-    // const index = users.findIndex(user => user.id === id);
-
-    // if (index === -1) {
-    //     return res.status(404).send({ message: "User not found" });
-    // }
-
-    // const filteredUsers = users.filter(user => user.id !== id);
-    // data.users = filteredUsers;
-    // setUsers(data);
-
-    const deletedUser = await User.findByIdAndDelete(id);
-
-    if(!deletedUser){
-        res.status(404).send({message:"User not found"});
+        res.status(200).json({
+            message: "User deleted",
+            response: deletedUser
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Error deleting user", error: err.message });
     }
-
-    res.status(200).send({
-        message: "User deleted",
-        response: deletedUser
-    });
 };
 
 module.exports = { getAllUsers, createNewUser, updateUser, deleteUser };
-

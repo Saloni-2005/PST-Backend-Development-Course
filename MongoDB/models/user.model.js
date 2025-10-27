@@ -1,37 +1,32 @@
-// Schema, Model, Types of Schema
-// Who interact with DB : Schema or Model  ? Model
-// 
-
 const mongoose = require("mongoose");
 
 const addressSchema = new mongoose.Schema({
-    houseNumber:Number,
-    landmark:String,
-    pinCode:String
-})
+    houseNumber: Number,
+    landmark: String,
+    pinCode: String
+});
 
 const userSchema = new mongoose.Schema({
-    name:String,
-    email:String,
-    interest:{
-        type:String,
-        enum:["frontend", "backend", "fullstack"]
+    name: { type: String, required: true },
+    email: { type: String, required: true },
+    marks: {
+        type: Number,
+        min: 0,
+        max: 100
     },
-    marks:{
-        type:Number,
-        min:0,
-        max:100
+    address: [addressSchema],
+    role: {
+        type: String,
+        required: true,
+        enum: ["student", "mentor", "admin", "instructor"],
+        default: "student"
     },
-    address:[addressSchema],
-    isActive:Boolean,
-    role:{
-        type:String,
-        require:true,
-        enum:["student", "mentor", "admin"],
-        default:"student"
-    },
-    clubs: [mongoose.Schema.Types.ObjectId]
-}, {timestamps:true})
+    clubs: [{ type: mongoose.Schema.Types.ObjectId }]
+}, { timestamps: true });
+
+userSchema.virtual("isPassed").get(function() {
+    return this.marks >= 40;
+});
 
 const User = mongoose.model("User", userSchema);
 
